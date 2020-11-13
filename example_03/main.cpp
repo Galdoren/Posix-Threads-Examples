@@ -13,6 +13,10 @@
 pthread_attr_t attr;
 
 void* do_work(void* arg) {
+	/* 
+	  A large double array of double, which will exceed the default stack size in most architectures. 
+	  Fortunately, we've increased the stack size beforehand while creating the thread.
+	*/
 	double A[N][N];
 	int i, j;
 	unsigned long int tid;
@@ -21,6 +25,7 @@ void* do_work(void* arg) {
 
 
 	tid = pthread_self();
+	/* get the stack size, you should see that it'll be equal to the value we've set before creating this thread */
 	pthread_attr_getstacksize(&attr, &stack_size);
 	printf("Thread id %ld: stack size = %li bytes\n", tid, stack_size);
 	for(i = 0; i < N; i++) {
@@ -43,13 +48,14 @@ int main() {
 		fprintf(stderr, "ERROR: while creating thread attribute object");
 		return 1;
 	}
-
+	/* lets see the default stack size for a POSIX thread first */
 	pthread_attr_getstacksize(&attr, &stack_size);
 	printf("Default stack size = %li bytes\n", stack_size);
+	/* Lets set the stack size to the value of N * N + MBEXTRA */
 	stack_size = sizeof(double)* N * N + MBEXTRA;
 	pthread_attr_setstacksize(&attr, stack_size);
 
-	/* Create a new POSIX Thread */
+	/* Create a new POSIX Thread, don't forget to pass in the attribute so that we set the stack size for the thread */
 	rc = pthread_create(&thread, &attr, do_work, (void*) NULL);
 	/* Cleanup pthread_attr_t object, we don't need it anymore */
 	pthread_attr_destroy(&attr);
@@ -57,7 +63,7 @@ int main() {
 		fprintf(stderr, "ERROR: while creating thread");
 		return 2;
 	}
-
+	/* Wait for thread to finish */
 	rc = pthread_join(thread, &status);
 	if(rc) {
 		fprintf(stderr, "ERROR: while waiting for thread to join");
