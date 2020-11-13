@@ -28,15 +28,19 @@ public:
 	bool start() {
 		pthread_attr_t attr;
                 struct thread_data* data;
+		/* Initialize the attribute struct */
 		pthread_attr_init(&attr);
                 data = (struct thread_data*)malloc(sizeof(struct thread_data));
-				data->message = (char*)malloc(20 * sizeof(char));
-				data->tid = 5;
-				sprintf(data->message, "hello world!");
+		data->message = (char*)malloc(20 * sizeof(char));
+		data->tid = 5;
+		sprintf(data->message, "hello world!");
+		/* pass both attribute and thread arguments in pthread_create function */
 		int rc = pthread_create(&m_thread, &attr, &abc::do_work, (void*)data);
+		/* Cleanup the attribute struct since we don't need it anymore */
 		pthread_attr_destroy(&attr);
 		if(rc) {
 			fprintf(stderr, "ERROR: while creating thread\n");
+			/* cleanup the message */
 			free(data->message);
 			free(data);
 			return false;
@@ -46,6 +50,7 @@ public:
 
 	bool wait() {
 		void* status;
+		/* wait for thread to finish */
 		int rc = pthread_join(m_thread, &status);
 		if(rc) {
 			fprintf(stderr, "ERROR: while joining thread\n");
