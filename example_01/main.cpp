@@ -29,7 +29,7 @@ int main() {
 		fprintf(stderr, "ERROR: while creating thread");
 		return 2;
 	}
-
+	/* Wait for thread to finish work */
 	rc = pthread_join(thread, &status);
 	if(rc) {
 		fprintf(stderr, "ERROR: while waiting for thread to join");
